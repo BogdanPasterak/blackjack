@@ -13,15 +13,16 @@
     $deck;
 
     function fillRandomDeck() {
+        $randomDeck = array();
         for ($i=0; $i < 52; $i++) { 
-            $deck[$i] = $i;
+            $randomDeck[$i] = $i;
         }
+        return $randomDeck;
     }
 
     function init() {
-        $deck = array();
-        fillRandomDeck();
-
+        global $deck;
+        $deck = fillRandomDeck();
     }
 
     // Controller
@@ -30,13 +31,19 @@
         init();
     }
 
-?>
-    <h1>Bogdan Pasterak L00157106</h1>
-    
-<?php
+
+    echo "<h1>Bogdan Pasterak L00157106</h1>";
     // View
-    echo "<p>Deck {$deck}</p>";
+    // echo "<p>Deck ".count($deck)." el 3 = ".$deck[2]."</p>";
+    if (isset($_GET['cli'])) {
+        echo "cll button clicked";
+    }
 
 ?>
+
+<form action="index.php" method="get">
+    <input type="submit" name="cli" value="Sto">
+</form>
+    
 </body>
 </html>
