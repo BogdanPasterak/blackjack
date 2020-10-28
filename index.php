@@ -48,7 +48,7 @@
     // View
 
     if (isset($_GET['submit'])) {
-        if ($_GET['submit'] == "Reset") {
+        if ($_GET['submit'] == "RESET") {
             $_SESSION["pointer"] = 0;
         }
         elseif ($_GET['submit'] == "Sto") {
@@ -63,14 +63,27 @@
     //             $_SESSION["deck"][$_SESSION["pointer"]]."</p>";
 
 ?>
-
+<script>
+    function showValue(val) 
+    {
+        document.querySelector("#value").innerHTML(val);
+    }
+</script>
 <form action="index.php" method="get">
-    <input type="submit" name="submit" value="DEAL">
-    <input type="submit" name="submit" value="HIT">
-    <input type="submit" name="submit" value="STAND">
-    <input type="submit" name="submit" value="DOUBLE">
-    <input type="submit" name="submit" value="SPLIT">
-    <input type="submit" name="submit" value="RESET">
+    <fieldset>
+        <legend>Game Action</legend>
+        <input type="range" name="value" id="val" min="2" max="20">
+        <input type="number" name="v" id="value" min="2" max="20" step="1" width="3">
+        <input type="submit" name="submit" value="DEAL">
+        <input type="submit" name="submit" value="HIT">
+        <input type="submit" name="submit" value="STAND">
+        <input type="submit" name="submit" value="DOUBLE">
+        <input type="submit" name="submit" value="SPLIT">
+        </fieldset>
+    <fieldset>
+    <legend>Reset Game</legend>
+        <input type="submit" name="submit" value="RESET">
+    </fieldset>
 </form>
     
 <?php
