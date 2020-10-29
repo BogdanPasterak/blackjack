@@ -1,3 +1,8 @@
+html, body
+{
+    height: 95%;
+}
+
 h1
 {
     /* font-size: xx-small; */
@@ -13,10 +18,41 @@ fieldset
 {
     display: flex;
     border-radius: 6px;
-    flex-grow: 1;
+    flex-grow: 2;
+    height: 93%;
 }
 
 input
 {
     flex-grow: 1;
+    margin: 0 5px;
+}
+
+.grow-half
+{
+    flex-grow: 1;
+}
+
+.play
+{
+    width: 100%;
+    height: 80%;
+}
+
+.quarter
+{
+    width: 50%;
+}
+
+.player
+{
+    width: 100%;
+    height: 50%;
+}
+
+.top
+{
+    width: 100%;
+    height: 50%;
+    display: flex;
 }

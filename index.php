@@ -24,16 +24,23 @@
 
 
     function fillRandomDeck() {
+        $fullDeck = array();
         $randomDeck = array();
         for ($i=0; $i < 52; $i++) { 
-            $randomDeck[$i] = $i;
+            $fullDeck[$i] = $i + 1;
         }
+        for ($i=0; $i < 52; $i++) {
+            $rnd = rand(0, count($fullDeck) - 1);
+            // if ($i < 20) print($rnd.",[".$fullDeck[$rnd]."] ");
+            $randomDeck[$i] = $fullDeck[$rnd];
+            array_splice($fullDeck, $rnd, 1);
+        }
+        // print_r($randomDeck);
         return $randomDeck;
     }
 
 
     if (! $visited) {
-        $_SESSION["deck"] = fillRandomDeck();
         $_SESSION["pointer"] = 0;
     }
     else {
@@ -48,14 +55,19 @@
     // View
 
     if (isset($_GET['submit'])) {
-        if ($_GET['submit'] == "RESET") {
-            $_SESSION["pointer"] = 0;
-        }
-        elseif ($_GET['submit'] == "Sto") {
-            $_SESSION["pointer"] = 30;
-        }
-        else {
-            $_SESSION["pointer"]++;
+        switch ($_GET['submit']) {
+            case 'DEAL':
+                echo 'DEAL ';
+                $_SESSION["deck"] = fillRandomDeck();
+            break;
+            case 'married':
+                echo 'you are married';
+            break;
+            case 'divorced':
+                echo 'you are divorced';
+            break;
+            default:
+                echo 'you are something else';
         }
     }
 
@@ -63,33 +75,51 @@
     //             $_SESSION["deck"][$_SESSION["pointer"]]."</p>";
 
 ?>
-<script>
-    function showValue(val) 
-    {
-        document.querySelector("#value").innerHTML(val);
-    }
-</script>
+<div class="play">
+    <div class="top">
+        <fieldset class="quarter">
+            <legend>Dealer</legend>
+        </fieldset>
+        <fieldset class="quarter">
+            <legend>Deck</legend>
+        </fieldset>
+    </div>
+    <div class="player">
+        <fieldset>
+            <legend>Player</legend>
+        </fieldset>
+    </div>
+
+</div>
 <form action="index.php" method="get">
     <fieldset>
         <legend>Game Action</legend>
-        <input type="range" name="value" id="val" min="2" max="20">
-        <input type="number" name="v" id="value" min="2" max="20" step="1" width="3">
+        <input type="range" name="value" id="rangeCoin" min="2" max="20" onmousemove="showValue(this.value)"
+            onmousedown="showValue(this.value)" onmouseup="showValue(this.value)" value="2">
+        <input type="number" name="v" id="numberCoin" min="2" max="20" step="1" width="3"
+            onchange="setRange(this.value)" value="2" style="width: 1em;">
         <input type="submit" name="submit" value="DEAL">
         <input type="submit" name="submit" value="HIT">
         <input type="submit" name="submit" value="STAND">
         <input type="submit" name="submit" value="DOUBLE">
         <input type="submit" name="submit" value="SPLIT">
         </fieldset>
-    <fieldset>
+    <fieldset class="grow-half">
     <legend>Reset Game</legend>
         <input type="submit" name="submit" value="RESET">
     </fieldset>
 </form>
     
 <?php
-    print_r("Visited: ".$_SESSION["visited"]."<br>");
-    print_r("Deck: ".count($_SESSION["deck"])."<br>");
-    print_r("Pointer: ".$_SESSION["pointer"]."<br>");
+    // print_r("Visited: ".$_SESSION["visited"]."<br>");
+    // print_r("Deck: ".count($_SESSION["deck"])."<br>");
+    // print_r("Pointer: ".$_SESSION["pointer"]."<br>");
 ?>
+<script>
+    function showValue(val) 
+    {   coin = document.querySelector("#numberCoin").value = val; }
+    function setRange(val)
+    {   coin = document.querySelector("#rangeCoin").value = val; }
+</script>
 </body>
 </html>
