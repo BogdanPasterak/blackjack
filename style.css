@@ -22,6 +22,18 @@ fieldset
     height: 93%;
 }
 
+img
+{
+    margin: 10px;
+}
+
+.center
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 input
 {
     flex-grow: 1;
@@ -39,9 +51,14 @@ input
     height: 80%;
 }
 
-.quarter
+.left
 {
-    width: 50%;
+    width: 70%;
+}
+
+.right
+{
+    width: 30%;
 }
 
 .player
@@ -55,4 +72,11 @@ input
     width: 100%;
     height: 50%;
     display: flex;
+}
+
+.count
+{
+    position: relative;
+    top: -70px;
+    left: 105px;
 }

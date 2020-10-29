@@ -31,37 +31,72 @@
         }
         for ($i=0; $i < 52; $i++) {
             $rnd = rand(0, count($fullDeck) - 1);
-            // if ($i < 20) print($rnd.",[".$fullDeck[$rnd]."] ");
             $randomDeck[$i] = $fullDeck[$rnd];
             array_splice($fullDeck, $rnd, 1);
         }
-        // print_r($randomDeck);
         return $randomDeck;
     }
 
+    function resetGame() {
+        $_SESSION["money"] = 10;
+        $_SESSION["playerCards"] = array();
+        $_SESSION["dealerCards"] = array();
+        $_SESSION["dealerVisable"] = false;
+        $_SESSION["buttons"] = array(
+            "deal" => "",
+            "hit" => "disabled",
+            "stand" => "disabled",
+            "double" => "disabled",
+            "split" => "disabled",
+        );
+    }
+
+    function getCard() {
+        return array_splice($_SESSION["deck"], 0, 1)[0];
+    }
+
+    function dealCards() {
+        array_push($_SESSION["playerCards"], getCard());
+        array_push($_SESSION["dealerCards"], getCard());
+        array_push($_SESSION["playerCards"], getCard());
+        array_push($_SESSION["dealerCards"], getCard());
+    }
+
+    function hitCard()
+    {
+        array_push($_SESSION["playerCards"], getCard());
+    }
 
     if (! $visited) {
-        $_SESSION["pointer"] = 0;
+        resetGame();
     }
     else {
-        if (! isset($_SESSION["deck"])) {
-            session_destroy();
-            echo "Destroy Session";
+        if (isset($_GET['submit']) and $_GET['submit'] == "RESET") {
+            // echo '<h2>RESET</h2>';
+            $_GET['submit'] = null;
+            resetGame();
         }
     }
 
 
-    echo "<h1>Bogdan Pasterak L00157106</h1>";
-    // View
 
     if (isset($_GET['submit'])) {
         switch ($_GET['submit']) {
             case 'DEAL':
-                echo 'DEAL ';
                 $_SESSION["deck"] = fillRandomDeck();
+                $_SESSION["money"] -= $_GET["value"];
+                $_SESSION["buttons"]["deal"] = "disabled";
+                $_SESSION["buttons"]["hit"] = "";
+                $_SESSION["buttons"]["stand"] = "";
+                dealCards();
+                if ((float)$_SESSION["money"] < 2)
+                {
+                    echo "<h2>END GAME</h2>";
+                }
+                // echo "<h2>Money: ".(float)$_SESSION["money"]."</h2>";
             break;
-            case 'married':
-                echo 'you are married';
+            case 'HIT':
+                hitCard();
             break;
             case 'divorced':
                 echo 'you are divorced';
@@ -71,22 +106,94 @@
         }
     }
 
-    // echo "<p>Deck ".count($_SESSION["deck"])." el ".$_SESSION["pointer"]." = ".
-    //             $_SESSION["deck"][$_SESSION["pointer"]]."</p>";
+    // View
+
+    function limit() {
+        return min(20, $_SESSION["money"]);
+    }
+
+    function scoring($who) {
+        $sum = 0;
+        $ass = 0;
+        $cards = $_SESSION[$who."Cards"];
+        foreach ($cards as $value) {
+            $lessColor = ((int)$value - 1) % 13;
+            if ($lessColor == 0)
+            {
+                $sum += 11;
+                $ass++;
+            }
+            elseif ($lessColor < 10)
+            {
+                $sum += $lessColor + 1;
+            }
+            else
+            {
+                $sum += 11;
+            }
+        }
+        if ($sum > 21 and $ass > 0)
+        {
+            $sum -= 10;
+            if ($sum > 21 and $ass > 1)
+            {
+                $sum -= 10;
+                if ($sum > 21 and $ass > 2)
+                {
+                    $sum -= 10;
+                    if ($sum > 21 and $ass == 4)
+                    {
+                        $sum -= 10;
+                    }
+                }
+            }
+        }
+        return $sum;
+    }
 
 ?>
+
+<h1>Bogdan Pasterak L00157106</h1>
 <div class="play">
     <div class="top">
-        <fieldset class="quarter">
+        <fieldset class="left center">
             <legend>Dealer</legend>
+<?php # insert cards
+foreach ($_SESSION["dealerCards"] as $key => $card) {
+    if ($key == "0")
+    {
+        echo ('<img src="images/'.$card.'.png">');
+    }
+    else
+    {
+        if ($_SESSION["dealerVisable"])
+        {
+            echo ('<img src="images/'.$card.'.png">');
+        }
+        else
+        {
+            echo ('<img src="images/back.png">');
+        }
+    }
+}
+?>
         </fieldset>
-        <fieldset class="quarter">
+        <fieldset class="right center">
             <legend>Deck</legend>
+            <div>
+                <img src="images/back.png" alt="">
+            </div>
         </fieldset>
     </div>
     <div class="player">
-        <fieldset>
-            <legend>Player</legend>
+        <fieldset class="center">
+            <legend>Player budget: <?php echo number_format($_SESSION["money"], 2) ?> </legend>
+            <h3 class="">Scoring : <?php echo scoring("player") ?></h3>
+<?php # insert cards
+foreach ($_SESSION["playerCards"] as &$card) {
+    echo ('<img src="images/'.$card.'.png">');
+}
+?>
         </fieldset>
     </div>
 
@@ -94,15 +201,19 @@
 <form action="index.php" method="get">
     <fieldset>
         <legend>Game Action</legend>
-        <input type="range" name="value" id="rangeCoin" min="2" max="20" onmousemove="showValue(this.value)"
-            onmousedown="showValue(this.value)" onmouseup="showValue(this.value)" value="2">
-        <input type="number" name="v" id="numberCoin" min="2" max="20" step="1" width="3"
-            onchange="setRange(this.value)" value="2" style="width: 1em;">
-        <input type="submit" name="submit" value="DEAL">
-        <input type="submit" name="submit" value="HIT">
-        <input type="submit" name="submit" value="STAND">
-        <input type="submit" name="submit" value="DOUBLE">
-        <input type="submit" name="submit" value="SPLIT">
+        <input type="range" name="value" id="rangeCoin" min="2" value="2"
+            <?php echo 'max="'.limit().'"' ?>
+            onmousemove="showValue(this.value)"
+            onmousedown="showValue(this.value)"
+            onmouseup="showValue(this.value)">
+        <input type="number" name="v" id="numberCoin" min="2" step="1" value="2"
+            <?php echo 'max="'.limit().'"' ?>
+            onchange="setRange(this.value)" style="width: 1em;">
+        <input type="submit" name="submit" value="DEAL" <?php echo $_SESSION["buttons"]["deal"] ?> >
+        <input type="submit" name="submit" value="HIT" <?php echo $_SESSION["buttons"]["hit"] ?> >
+        <input type="submit" name="submit" value="STAND" <?php echo $_SESSION["buttons"]["stand"] ?> >
+        <input type="submit" name="submit" value="DOUBLE" <?php echo $_SESSION["buttons"]["double"] ?> >
+        <input type="submit" name="submit" value="SPLIT" <?php echo $_SESSION["buttons"]["split"] ?> >
         </fieldset>
     <fieldset class="grow-half">
     <legend>Reset Game</legend>
@@ -111,9 +222,7 @@
 </form>
     
 <?php
-    // print_r("Visited: ".$_SESSION["visited"]."<br>");
-    // print_r("Deck: ".count($_SESSION["deck"])."<br>");
-    // print_r("Pointer: ".$_SESSION["pointer"]."<br>");
+    // print_r($_SESSION["playerCards"]);
 ?>
 <script>
     function showValue(val) 
