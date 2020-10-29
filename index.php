@@ -42,6 +42,8 @@
         $_SESSION["playerCards"] = array();
         $_SESSION["dealerCards"] = array();
         $_SESSION["dealerVisable"] = false;
+        $_SESSION["message"] = "YOU WON";
+        $_SESSION["modalVisable"] = "";//" invisible";
         $_SESSION["buttons"] = array(
             "deal" => "",
             "hit" => "disabled",
@@ -67,51 +69,6 @@
         array_push($_SESSION["playerCards"], getCard());
     }
 
-    if (! $visited) {
-        resetGame();
-    }
-    else {
-        if (isset($_GET['submit']) and $_GET['submit'] == "RESET") {
-            // echo '<h2>RESET</h2>';
-            $_GET['submit'] = null;
-            resetGame();
-        }
-    }
-
-
-
-    if (isset($_GET['submit'])) {
-        switch ($_GET['submit']) {
-            case 'DEAL':
-                $_SESSION["deck"] = fillRandomDeck();
-                $_SESSION["money"] -= $_GET["value"];
-                $_SESSION["buttons"]["deal"] = "disabled";
-                $_SESSION["buttons"]["hit"] = "";
-                $_SESSION["buttons"]["stand"] = "";
-                dealCards();
-                if ((float)$_SESSION["money"] < 2)
-                {
-                    echo "<h2>END GAME</h2>";
-                }
-                // echo "<h2>Money: ".(float)$_SESSION["money"]."</h2>";
-            break;
-            case 'HIT':
-                hitCard();
-            break;
-            case 'divorced':
-                echo 'you are divorced';
-            break;
-            default:
-                echo 'you are something else';
-        }
-    }
-
-    // View
-
-    function limit() {
-        return max(2, min(20, $_SESSION["money"]));
-    }
-
     function scoring($who) {
         $sum = 0;
         $ass = 0;
@@ -129,7 +86,7 @@
             }
             else
             {
-                $sum += 11;
+                $sum += 10;
             }
         }
         if ($sum > 21 and $ass > 0)
@@ -151,6 +108,68 @@
         return $sum;
     }
 
+    function dealerHit() 
+    {
+        $_SESSION["dealerVisable"] = true;
+        $dealerScore = scoring("dealer");
+        while ($dealerScore <= 16)
+        {
+            array_push($_SESSION["dealerCards"], getCard());
+            $dealerScore = scoring("dealer");
+        }
+        echo $dealerScore;
+
+    }
+
+    function limit() {
+        return max(2, min(20, $_SESSION["money"]));
+    }
+
+    // first start
+    if (! $visited) {
+        resetGame();
+    }
+    else {
+        if (isset($_GET['submit']) and $_GET['submit'] == "RESET") {
+            // echo '<h2>RESET</h2>';
+            $_GET['submit'] = null;
+            resetGame();
+        }
+    }
+
+
+    if (isset($_GET['submit'])) {
+        switch ($_GET['submit']) {
+            case 'DEAL':
+                $_SESSION["deck"] = fillRandomDeck();
+                $_SESSION["money"] -= $_GET["value"];
+                $_SESSION["buttons"]["deal"] = "disabled";
+                $_SESSION["buttons"]["hit"] = "";
+                $_SESSION["buttons"]["stand"] = "";
+                dealCards();
+                if ((float)$_SESSION["money"] < 2)
+                {
+                    echo "<h2>END GAME</h2>";
+                }
+            break;
+            case 'HIT':
+                hitCard();
+                if (scoring("player") > 21 )
+                {
+                    echo "<h2>END GAME</h2>";
+                }
+            break;
+            case 'STAND':
+                dealerHit();
+                echo 'you are divorced';
+            break;
+            default:
+                echo 'you are something else';
+        }
+    }
+
+    // View
+
 ?>
 
 <h1>Bogdan Pasterak L00157106</h1>
@@ -159,6 +178,10 @@
         <fieldset class="left center">
             <legend>Dealer</legend>
 <?php # insert cards
+if ($_SESSION["dealerVisable"])
+{
+    echo "<h3>Scoring : ".scoring('dealer')."</h3>";
+}
 foreach ($_SESSION["dealerCards"] as $key => $card) {
     if ($key == "0")
     {
@@ -188,7 +211,7 @@ foreach ($_SESSION["dealerCards"] as $key => $card) {
     <div class="player">
         <fieldset class="center">
             <legend>Player budget: <?php echo number_format($_SESSION["money"], 2) ?> </legend>
-            <h3 class="">Scoring : <?php echo scoring("player") ?></h3>
+            <h3>Scoring : <?php echo scoring("player") ?></h3>
 <?php # insert cards
 foreach ($_SESSION["playerCards"] as &$card) {
     echo ('<img src="images/'.$card.'.png">');
@@ -219,6 +242,11 @@ foreach ($_SESSION["playerCards"] as &$card) {
     <legend>Reset Game</legend>
         <input type="submit" name="submit" value="RESET">
     </fieldset>
+</form>
+
+<form class="modal<?php echo ($_SESSION["modalVisable"]); ?>" action="index.php" method="get">
+    <h2><?php echo $_SESSION["message"] ?></h2>
+    <input type="submit" name="submit" value="RESET" class="reset-btn">
 </form>
     
 <?php

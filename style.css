@@ -80,3 +80,31 @@ input
     top: -70px;
     left: 105px;
 }
+
+.modal
+{
+    position: fixed;
+    left: 25%;
+    top: 30%;
+    width: 50%;
+    height: 30%;
+    z-index: 1;
+    border: 5px black solid;
+    border-radius: 6px;
+    background-color: white;
+    opacity: .8;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.reset-btn
+{
+    flex-grow: 0;
+}
+
+.invisible
+{
+    display: none;
+}
