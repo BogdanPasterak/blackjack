@@ -109,7 +109,7 @@
     // View
 
     function limit() {
-        return min(20, $_SESSION["money"]);
+        return max(2, min(20, $_SESSION["money"]));
     }
 
     function scoring($who) {
