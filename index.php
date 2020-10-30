@@ -70,7 +70,8 @@
         $_SESSION["buttons"]["deal"] = "disabled";
         $_SESSION["buttons"]["hit"] = "";
         $_SESSION["buttons"]["stand"] = "";
-        $_SESSION["buttons"]["double"] = "";
+        if ($_SESSION["money"] >= $_SESSION["bet"])
+            $_SESSION["buttons"]["double"] = "";
 
         array_push($_SESSION["playerCards"], getCard());
         array_push($_SESSION["dealerCards"], getCard());
@@ -144,6 +145,13 @@
             $_SESSION["game"] = "lost";
     }
 
+    function doubleBet()
+    {
+        $_SESSION["money"] -= $_SESSION["bet"];
+        $_SESSION["bet"] *= 2;
+        hitCard();
+    }
+
     function won()
     {
         $_SESSION["money"] += $_SESSION["bet"] * 2;
@@ -191,6 +199,15 @@
                     $_SESSION["modalVisable"] = "";
                 }
             break;
+            case 'DOUBLE':
+                doubleBet();
+                if (scoring("player") > 21 )
+                {
+                    lost();
+                    $_SESSION["modalVisable"] = "";
+                    break;
+                }
+                // no break ! continue with stand
             case 'STAND':
                 dealerHit();
                 switch($_SESSION["game"]) {
