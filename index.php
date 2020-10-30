@@ -272,7 +272,17 @@ foreach ($_SESSION["dealerCards"] as $key => $card) {
         <fieldset class="right center">
             <legend>Deck</legend>
             <div>
-                <img src="images/back.png" alt="">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <img src="images/back.png" alt="" class="flip-card-img">
+                        </div>
+                        <div class="flip-card-back">
+                            <img src="images/<?php echo $_SESSION["deck"][0] ?>.png" alt="" class="flip-card-img">
+                        </div>
+                    </div>
+                </div>
+                <!-- <img src="images/back.png" alt=""> -->
             </div>
         </fieldset>
     </div>
