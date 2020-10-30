@@ -43,7 +43,7 @@
         $_SESSION["dealerCards"] = array();
         $_SESSION["dealerVisable"] = false;
         $_SESSION["message"] = "YOU WON";
-        $_SESSION["modalVisable"] = "";//" invisible";
+        $_SESSION["modalVisable"] = " invisible";
         $_SESSION["buttons"] = array(
             "deal" => "",
             "hit" => "disabled",
@@ -111,14 +111,38 @@
     function dealerHit() 
     {
         $_SESSION["dealerVisable"] = true;
+        $playerScore = scoring("player");
         $dealerScore = scoring("dealer");
         while ($dealerScore <= 16)
         {
             array_push($_SESSION["dealerCards"], getCard());
             $dealerScore = scoring("dealer");
         }
-        echo $dealerScore;
+        
+        if ($dealerScore == $playerScore)
+            return "draw";
+        elseif ($dealerScore > 21 or $dealerScore < $playerScore )
+            return "won";
+        else
+            return "lost";
+    }
 
+    function won()
+    {
+        $_SESSION["message"] = "YOU WON";
+        $_SESSION["modalVisable"] = "";
+    }
+
+    function lost()
+    {
+        $_SESSION["message"] = "YOU LOST";
+        $_SESSION["modalVisable"] = "";
+    }
+
+    function draw()
+    {
+        $_SESSION["message"] = "YOU DRAW";
+        $_SESSION["modalVisable"] = "";
     }
 
     function limit() {
@@ -149,19 +173,30 @@
                 dealCards();
                 if ((float)$_SESSION["money"] < 2)
                 {
-                    echo "<h2>END GAME</h2>";
+                    lost();
                 }
             break;
             case 'HIT':
                 hitCard();
                 if (scoring("player") > 21 )
                 {
-                    echo "<h2>END GAME</h2>";
+                    lost();
                 }
             break;
             case 'STAND':
-                dealerHit();
-                echo 'you are divorced';
+                $result = dealerHit();
+                if ( $result == "won")
+                {
+                    won();
+                }
+                elseif ( $result == "lost")
+                {
+                    lost();
+                }
+                else
+                {
+                    draw();
+                }
             break;
             default:
                 echo 'you are something else';
