@@ -37,13 +37,14 @@
         return $randomDeck;
     }
 
-    function resetGame() {
-        $_SESSION["money"] = 10;
+    function continueGame() {
         $_SESSION["playerCards"] = array();
         $_SESSION["dealerCards"] = array();
         $_SESSION["dealerVisable"] = false;
-        $_SESSION["message"] = "YOU WON";
+        $_SESSION["message"] = "WELCOME";
         $_SESSION["modalVisable"] = " invisible";
+        $_SESSION["bet"] = 0;
+        $_SESSION["game"] = "";
         $_SESSION["buttons"] = array(
             "deal" => "",
             "hit" => "disabled",
@@ -53,11 +54,24 @@
         );
     }
 
+    function resetGame() {
+        $_SESSION["money"] = 10;
+        continueGame();
+    }
+
     function getCard() {
         return array_splice($_SESSION["deck"], 0, 1)[0];
     }
 
     function dealCards() {
+        $_SESSION["bet"] = $_GET["value"];
+        $_SESSION["deck"] = fillRandomDeck();
+        $_SESSION["money"] -= $_GET["value"];
+        $_SESSION["buttons"]["deal"] = "disabled";
+        $_SESSION["buttons"]["hit"] = "";
+        $_SESSION["buttons"]["stand"] = "";
+        $_SESSION["buttons"]["double"] = "";
+
         array_push($_SESSION["playerCards"], getCard());
         array_push($_SESSION["dealerCards"], getCard());
         array_push($_SESSION["playerCards"], getCard());
@@ -66,6 +80,7 @@
 
     function hitCard()
     {
+        $_SESSION["buttons"]["double"] = "disabled";
         array_push($_SESSION["playerCards"], getCard());
     }
 
@@ -110,6 +125,7 @@
 
     function dealerHit() 
     {
+        $_SESSION["buttons"]["double"] = "disabled";
         $_SESSION["dealerVisable"] = true;
         $playerScore = scoring("player");
         $dealerScore = scoring("dealer");
@@ -119,30 +135,30 @@
             $dealerScore = scoring("dealer");
         }
         
+
         if ($dealerScore == $playerScore)
-            return "draw";
+            $_SESSION["game"] = "draw";
         elseif ($dealerScore > 21 or $dealerScore < $playerScore )
-            return "won";
+            $_SESSION["game"] = "won";
         else
-            return "lost";
+            $_SESSION["game"] = "lost";
     }
 
     function won()
     {
-        $_SESSION["message"] = "YOU WON";
-        $_SESSION["modalVisable"] = "";
+        $_SESSION["money"] += $_SESSION["bet"] * 2;
+        $_SESSION["message"] = "YOU WON ".($_SESSION["bet"] * 2)." €";
     }
 
     function lost()
     {
-        $_SESSION["message"] = "YOU LOST";
-        $_SESSION["modalVisable"] = "";
+        $_SESSION["message"] = "YOU LOST ".$_SESSION["bet"]." €";
     }
 
     function draw()
     {
+        $_SESSION["money"] += $_SESSION["bet"];
         $_SESSION["message"] = "YOU DRAW";
-        $_SESSION["modalVisable"] = "";
     }
 
     function limit() {
@@ -165,37 +181,37 @@
     if (isset($_GET['submit'])) {
         switch ($_GET['submit']) {
             case 'DEAL':
-                $_SESSION["deck"] = fillRandomDeck();
-                $_SESSION["money"] -= $_GET["value"];
-                $_SESSION["buttons"]["deal"] = "disabled";
-                $_SESSION["buttons"]["hit"] = "";
-                $_SESSION["buttons"]["stand"] = "";
                 dealCards();
-                if ((float)$_SESSION["money"] < 2)
-                {
-                    lost();
-                }
             break;
             case 'HIT':
                 hitCard();
                 if (scoring("player") > 21 )
                 {
                     lost();
+                    $_SESSION["modalVisable"] = "";
                 }
             break;
             case 'STAND':
-                $result = dealerHit();
-                if ( $result == "won")
-                {
-                    won();
+                dealerHit();
+                switch($_SESSION["game"]) {
+                    case "won":
+                        won();
+                    break;
+                    case "lost":
+                        lost();
+                    break;
+                    default:
+                        draw();
                 }
-                elseif ( $result == "lost")
+                $_SESSION["modalVisable"] = "";
+                $_SESSION["game"] = "";
+            break;
+            case 'CONTINUE':
+                continueGame();
+                if ($_SESSION["money"] < 2)
                 {
-                    lost();
-                }
-                else
-                {
-                    draw();
+                    $_SESSION["message"] = "You've lost all your money !!<br>Find money and come back.";
+                    $_SESSION["modalVisable"] = "";
                 }
             break;
             default:
@@ -245,8 +261,11 @@ foreach ($_SESSION["dealerCards"] as $key => $card) {
     </div>
     <div class="player">
         <fieldset class="center">
-            <legend>Player budget: <?php echo number_format($_SESSION["money"], 2) ?> </legend>
-            <h3>Scoring : <?php echo scoring("player") ?></h3>
+            <legend>Player budget: <b><?php echo number_format($_SESSION["money"], 2) ?> </b></legend>
+            <div class="info">
+                <h3>Scoring : <?php echo scoring("player") ?></h3>
+                <h3>Bet: <?php echo $_SESSION["bet"] ?></h3>
+            </div>
 <?php # insert cards
 foreach ($_SESSION["playerCards"] as &$card) {
     echo ('<img src="images/'.$card.'.png">');
@@ -281,7 +300,11 @@ foreach ($_SESSION["playerCards"] as &$card) {
 
 <form class="modal<?php echo ($_SESSION["modalVisable"]); ?>" action="index.php" method="get">
     <h2><?php echo $_SESSION["message"] ?></h2>
+<?php if (strlen($_SESSION["message"]) > 20) : ?>
     <input type="submit" name="submit" value="RESET" class="reset-btn">
+<?php else : ?>
+    <input type="submit" name="submit" value="CONTINUE" class="reset-btn">
+<?php endif ; ?>
 </form>
     
 <?php
