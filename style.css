@@ -7,6 +7,13 @@ h1
 {
     /* font-size: xx-small; */
     text-align: center;
+    margin-bottom: 0;
+}
+
+h2
+{
+    margin-top: .5em;
+    margin-bottom: .5em;
 }
 
 form
@@ -85,9 +92,9 @@ input
 {
     position: fixed;
     left: 25%;
-    top: 30%;
+    top: 28%;
     width: 50%;
-    height: 30%;
+    height: 34%;
     z-index: 1;
     border: 5px black solid;
     border-radius: 6px;
@@ -116,6 +123,28 @@ input
     padding: 0 10px;
     margin-right: 10px;
     text-align: center;
+}
+
+.result
+{
+    display: flex;
+    justify-content: space-around;
+}
+
+.help p
+{
+    margin: 5px 20px;
+}
+
+.img-mini
+{
+    margin: 2px -7px;
+    width: 30px;
+}
+
+.fiew
+{
+    display: flex;
 }
 
 /* The flip card container - set the width and height to whatever you want. We have added the border property to demonstrate that the flip itself goes out of the box on hover (remove perspective if you don't want the 3D effect */

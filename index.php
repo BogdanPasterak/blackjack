@@ -11,7 +11,7 @@
     if (session_status() == PHP_SESSION_NONE) {
         session_start();
     }
-    // first time false
+    // first time false (semafor)
     $visited = isset($_SESSION['visited']);
     // next true
     $_SESSION['visited'] = true;
@@ -19,9 +19,45 @@
     // Model
     // variable
 
-    // Controller
-    // echo "Visited ".rand(1,3);
+    function continueGame() {
+        $_SESSION["playerCards"] = array();
+        $_SESSION["dealerCards"] = array();
+        $_SESSION["dealerVisable"] = false;
+        $_SESSION["message"] = "<h1>WELCOME</h1><h2>Do you want to play Blackjack<h2>";
+        $_SESSION["modalVisable"] = " invisible";
+        $_SESSION["bet"] = 0;
+        $_SESSION["game"] = "";
+        $_SESSION["buttons"] = array(
+            "deal" => "",
+            "hit" => "disabled",
+            "stand" => "disabled",
+            "double" => "disabled",
+        );
+    }
 
+    function resetGame() {
+        $_SESSION["money"] = 10;
+        $_SESSION["result"] = array(
+            "dealer" => 0,
+            "player" => 0,
+            "draw" => 0,
+        );
+        continueGame();
+    }
+
+    // Controller
+
+    function customError($errno, $errstr) {
+        echo "<h2>Something went wrong</h2>";
+        echo "<h3>Error: [$errno] $errstr </h3>";
+        unset($_SESSION['visited']);
+        unset($visited);
+        session_destroy();
+        die();
+    }
+
+    // Error hendling
+    set_error_handler("customError");
 
     function fillRandomDeck() {
         $fullDeck = array();
@@ -35,28 +71,6 @@
             array_splice($fullDeck, $rnd, 1);
         }
         return $randomDeck;
-    }
-
-    function continueGame() {
-        $_SESSION["playerCards"] = array();
-        $_SESSION["dealerCards"] = array();
-        $_SESSION["dealerVisable"] = false;
-        $_SESSION["message"] = "WELCOME";
-        $_SESSION["modalVisable"] = " invisible";
-        $_SESSION["bet"] = 0;
-        $_SESSION["game"] = "";
-        $_SESSION["buttons"] = array(
-            "deal" => "",
-            "hit" => "disabled",
-            "stand" => "disabled",
-            "double" => "disabled",
-            "split" => "disabled",
-        );
-    }
-
-    function resetGame() {
-        $_SESSION["money"] = 10;
-        continueGame();
     }
 
     function getCard() {
@@ -154,17 +168,20 @@
 
     function won()
     {
+        $_SESSION["result"]['player'] += 1;
         $_SESSION["money"] += $_SESSION["bet"] * 2;
         $_SESSION["message"] = "YOU WON ".($_SESSION["bet"] * 2)." €";
     }
 
     function lost()
     {
+        $_SESSION["result"]['dealer'] += 1;
         $_SESSION["message"] = "YOU LOST ".$_SESSION["bet"]." €";
     }
 
     function draw()
     {
+        $_SESSION["result"]['draw'] += 1;
         $_SESSION["money"] += $_SESSION["bet"];
         $_SESSION["message"] = "YOU DRAW";
     }
@@ -173,18 +190,13 @@
         return max(2, min(20, $_SESSION["money"]));
     }
 
-    // first start
+    // first start, set data and svow welcome
     if (! $visited) {
         resetGame();
-    }
-    else {
-        if (isset($_GET['submit']) and $_GET['submit'] == "RESET") {
-            // echo '<h2>RESET</h2>';
-            $_GET['submit'] = null;
-            resetGame();
-        }
+        $_SESSION["modalVisable"] = "";
     }
 
+    // main loop, controll data and set view
 
     if (isset($_GET['submit'])) {
         switch ($_GET['submit']) {
@@ -231,8 +243,18 @@
                     $_SESSION["modalVisable"] = "";
                 }
             break;
+            case 'RESET':
+                resetGame();
+            break;
+            case 'HELP':
+                $_SESSION["modalVisable"] = "";
+                $_SESSION["message"] = "HELP";
+            break;
+            case 'BACK':
+                $_SESSION["modalVisable"] = " invisible";
+            break;
             default:
-                echo 'you are something else';
+                echo $_GET['submit'];
         }
     }
 
@@ -240,7 +262,12 @@
 
 ?>
 
-<h1>Bogdan Pasterak L00157106</h1>
+<h1>BLACKJACK by Bogdan Pasterak L00157106</h1>
+<div class="result">
+    <h2>Dealer : <?php echo $_SESSION["result"]["dealer"] ?></h2>
+    <h2>Draw : <?php echo $_SESSION["result"]["draw"] ?></h2>
+    <h2>Player : <?php echo $_SESSION["result"]["player"] ?></h2>
+</div>
 <div class="play">
     <div class="top">
         <fieldset class="left center">
@@ -267,10 +294,15 @@ foreach ($_SESSION["dealerCards"] as $key => $card) {
         }
     }
 }
+
+// to look at the card on top deck
+$topDeck = ( ! empty($_SESSION["deck"]) ) ? $_SESSION["deck"][0] : '1';
+
 ?>
         </fieldset>
         <fieldset class="right center">
             <legend>Deck</legend>
+            <!-- hovering the mouse turns the card -->
             <div>
                 <div class="flip-card">
                     <div class="flip-card-inner">
@@ -278,11 +310,10 @@ foreach ($_SESSION["dealerCards"] as $key => $card) {
                             <img src="images/back.png" alt="" class="flip-card-img">
                         </div>
                         <div class="flip-card-back">
-                            <img src="images/<?php echo $_SESSION["deck"][0] ?>.png" alt="" class="flip-card-img">
+                            <img src="images/<?php echo $topDeck ?>.png" alt="" class="flip-card-img">
                         </div>
                     </div>
                 </div>
-                <!-- <img src="images/back.png" alt=""> -->
             </div>
         </fieldset>
     </div>
@@ -304,7 +335,7 @@ foreach ($_SESSION["playerCards"] as &$card) {
 </div>
 <form action="index.php" method="get">
     <fieldset>
-        <legend>Game Action</legend>
+        <legend>Game Action -- Set Bet</legend>
         <input type="range" name="value" id="rangeCoin" min="2" value="2"
             <?php echo 'max="'.limit().'"' ?>
             onmousemove="showValue(this.value)"
@@ -317,26 +348,49 @@ foreach ($_SESSION["playerCards"] as &$card) {
         <input type="submit" name="submit" value="HIT" <?php echo $_SESSION["buttons"]["hit"] ?> >
         <input type="submit" name="submit" value="STAND" <?php echo $_SESSION["buttons"]["stand"] ?> >
         <input type="submit" name="submit" value="DOUBLE" <?php echo $_SESSION["buttons"]["double"] ?> >
-        <input type="submit" name="submit" value="SPLIT" <?php echo $_SESSION["buttons"]["split"] ?> >
         </fieldset>
     <fieldset class="grow-half">
-    <legend>Reset Game</legend>
+    <legend>Controll Game</legend>
+        <input type="submit" name="submit" value="HELP">
         <input type="submit" name="submit" value="RESET">
     </fieldset>
 </form>
 
 <form class="modal<?php echo ($_SESSION["modalVisable"]); ?>" action="index.php" method="get">
     <h2><?php echo $_SESSION["message"] ?></h2>
-<?php if (strlen($_SESSION["message"]) > 20) : ?>
+<?php if ($_SESSION["message"] == "HELP") : ?>
+    <div class="help">
+        <p>The goal of blackjack is to beat the dealer's hand</p>
+        <p>without going over 21.</p>
+        <div class="points">
+            <div class="cards">
+                <div class="fiew">
+                    <img src="images/14.png" alt="" class="img-mini">
+                    <p>Aces are worth 1 or 11, whichever makes a better hand.</p>
+                </div>
+                <div class="fiew">
+                    <img src="images/3.png" alt="" class="img-mini">
+                    <img src="images/33.png" alt="" class="img-mini">
+                    <img src="images/18.png" alt="" class="img-mini">
+                    <p>Number cards are worth number.</p>
+                </div>
+                <div class="fiew">
+                    <img src="images/12.png" alt="" class="img-mini">
+                    <img src="images/37.png" alt="" class="img-mini">
+                    <img src="images/52.png" alt="" class="img-mini">
+                    <p>Face cards are worth 10.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+        <input type="submit" name="submit" value="BACK" class="reset-btn">
+<?php elseif (strlen($_SESSION["message"]) > 20) : ?>
     <input type="submit" name="submit" value="RESET" class="reset-btn">
 <?php else : ?>
     <input type="submit" name="submit" value="CONTINUE" class="reset-btn">
 <?php endif ; ?>
 </form>
     
-<?php
-    // print_r($_SESSION["playerCards"]);
-?>
 <script>
     function showValue(val) 
     {   coin = document.querySelector("#numberCoin").value = val; }
