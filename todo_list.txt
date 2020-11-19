@@ -1,0 +1,22 @@
+Blackjack functionality
+    Displaying correct scoring of cards
+    All face cards are10 points
+    Aces can count as 1 or 11                           (20%)
+/ done / line 102: function scoring(who): points
+Recoding computer wins(player over 21 or equals scores) (10%)
+/ done / line 266: View -> div result
+Recording/updating betting details                      (10%)
+/ done / line 162 - 187: functions
+HCI – game screens
+    Splash/help/exit screens                            (10%)
+    / done / line 359: modal window (multipurpose)
+    Game GUI screen                                     (10%)
+    / done / line 336: form with action control elements
+    Scoring                                             (10%)
+    / done / line 278, 324: computer and player 
+    Display addition cards/dealer cards                 (10%)
+    / done / line 293, 329 : dealer and player cards
+Error handling                                          (10%)
+/ done / line 60 and 50: custom error handling
+Pseudo Code                                             (10%)
+/ done / file -> blackjack_pseudo_code.txt + this list

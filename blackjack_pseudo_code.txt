@@ -1,0 +1,73 @@
+// Bogdan Pasterak L00157106
+
+// Blackjack Game
+
+// Single-page application
+
+// Division into three parts MVC Architecture
+
+// MODEL
+Initial data (in Session variable)
+array playerCards
+array dealerCards
+array deck
+money
+bet
+game
+// view variable
+modalVisable
+array buttons
+	deal
+	hit
+	stand
+	double
+	split
+
+// CONTROLLER
+set of auxiliary functions
+...
+
+Initial game and Welcome massage in modal window
+
+An infinite loop of game
+only button deal available
+if button deal click
+	set bet subtracted from money
+	create mixed deck
+	two cards for player
+	two cards for dealer ( only one show )
+	available buttons hit, stand and double
+	if hit button
+		add 1 card to player cards
+		if over 21
+			dealer win
+	else if double button
+		bet * 2
+		subtract from money
+		dealer move
+		if over 21
+			dealer win
+	else stand button
+		dealer move
+	
+dealer move functon
+	if 16 or less hit card
+	else
+		calculate who win, update data
+		
+// VIEW
+
+Title
+Current result
+Game board with 3 area
+	dealer
+	deck
+	player
+Interactive Area inside html form
+	Set bet
+	Action Buttons
+	Reset Button
+	
+Footer
+
+
